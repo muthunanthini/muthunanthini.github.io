@@ -972,6 +972,13 @@
       color: var(--navy-deep);
       transform: translateY(-2px);
     }
+    .privacy-notice {
+      font-size: 12px;
+      color: #94A3B8;
+      margin-top: 6px;
+      line-height: 1.4;
+      max-width: 60ch;
+    }
 
     /* ============================================================
        RESPONSIVE MEDIA QUERIES
@@ -1486,7 +1493,10 @@
   <!-- Footer -->
   <footer>
     <div class="wrap">
-      <div>&copy; 2026 Muthu Nanthini P. Designed with accessible semantic HTML &amp; CSS.</div>
+      <div>
+        <div>&copy; 2026 Muthu Nanthini P. Designed with accessible semantic HTML &amp; CSS.</div>
+        <div class="privacy-notice">Privacy Notice: This site respects your privacy. Zero personal data, cookies, or IP addresses are tracked. Minimal anonymous visit timestamp is processed to notify the author of portfolio views.</div>
+      </div>
       <a class="back-to-top" href="#top" aria-label="Scroll back to the top of the page">Back to Top &uarr;</a>
     </div>
   </footer>
@@ -1565,6 +1575,43 @@
       }
       // If run locally via file://, allow standard anchor download + target="_blank" execution
     }
+
+    // Automatic Visitor Visit Notification (Privacy-Friendly & Rate-Limited)
+    (function() {
+      try {
+        // 1. Prevent duplicate notifications on page refresh / same browser session
+        if (sessionStorage.getItem('portfolio_visited')) return;
+        sessionStorage.setItem('portfolio_visited', 'true');
+
+        // 2. Cooldown check: prevent rapid repeat triggers from same device within 30 minutes
+        const lastVisit = localStorage.getItem('portfolio_last_visit');
+        const now = Date.now();
+        if (lastVisit && (now - parseInt(lastVisit, 10)) < 30 * 60 * 1000) {
+          return;
+        }
+        localStorage.setItem('portfolio_last_visit', now.toString());
+
+        // 3. Supabase Edge Function Endpoint URL
+        // Replace with your deployed function URL (e.g., https://<project-ref>.supabase.co/functions/v1/notify-visit)
+        const NOTIFICATION_ENDPOINT = "https://YOUR_SUPABASE_PROJECT_REF.supabase.co/functions/v1/notify-visit";
+
+        // Only fire if the endpoint URL has been configured
+        if (!NOTIFICATION_ENDPOINT || NOTIFICATION_ENDPOINT.includes("YOUR_SUPABASE_PROJECT_REF")) {
+          return;
+        }
+
+        // 4. Background trigger: zero personal data sent, fail-safe background fetch
+        fetch(NOTIFICATION_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          mode: "cors"
+        }).catch(() => {
+          // Fail silently to never interrupt visitor browsing
+        });
+      } catch (e) {
+        // Fail silently
+      }
+    })();
   </script>
 </body>
 </html>
